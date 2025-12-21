@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quranic Binary Encoding Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --fg: #e0e0e0;
+            --accent: #4a9eff;
+            --success: #4aff91;
+            --warn: #ffb84a;
+            --grid: #1a1a1a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        h1, h2, h3 { color: var(--accent); margin-bottom: 1rem; }
+        h1 { font-size: 2rem; text-align: center; margin-bottom: 2rem; }
+        h2 { font-size: 1.4rem; border-bottom: 1px solid var(--grid); padding-bottom: 0.5rem; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; gap: 2rem; margin-bottom: 2rem; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 1000px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--grid);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #333;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 1rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .stat-label { font-size: 0.9rem; opacity: 0.7; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th { color: var(--accent); }
+        .significant { color: var(--success); font-weight: bold; }
+        .chart-container { height: 300px; position: relative; }
+        .methodology {
+            background: #111;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        .formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            background: #1a1a1a;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+        .badge-confirmed { background: #1a4a2a; color: var(--success); }
+        .badge-pending { background: #4a3a1a; color: var(--warn); }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            opacity: 0.5;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quranic Binary Encoding Analysis</h1>
+
+        <div class="grid grid-3">
+            <div class="card stat-box">
+                <div class="stat-value">6,227</div>
+                <div class="stat-label">Verses Analyzed</div>
+            </div>
+            <div class="card stat-box">
+                <div class="stat-value">16</div>
+                <div class="stat-label">Encodings Tested</div>
+            </div>
+            <div class="card stat-box">
+                <div class="stat-value">13/16</div>
+                <div class="stat-label">Show Beyond-Word Structure</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Research Question</h2>
+            <p>Does there exist a function <span class="formula">f: Quran → Binary</span> that reveals non-random, interpretable structure?</p>
+            <div class="methodology">
+                <strong>Methodology:</strong>
+                <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Define semantic feature → binary mapping</li>
+                    <li>Apply encoding to full text and verses</li>
+                    <li>Compare with null model (shuffled)</li>
+                    <li>Control for word-level structure</li>
+                    <li>Interpret significant patterns</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <h2>Encoding Results (Controlled)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Encoding</th>
+                            <th>Domain</th>
+                            <th>Z-score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>E8_solar</td><td>Phonetic</td><td class="significant">-25.06</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E4_throat</td><td>Phonetic</td><td class="significant">-16.95</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E1_dot</td><td>Morphological</td><td class="significant">-16.47</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E2_voice</td><td>Phonetic</td><td class="significant">-15.78</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E5_connect</td><td>Morphological</td><td class="significant">-14.84</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E14_symmetric</td><td>Morphological</td><td class="significant">-14.80</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E6_abjad_parity</td><td>Numerical</td><td class="significant">-13.40</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E15_ascending</td><td>Morphological</td><td>-11.41</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E13_allah_letter</td><td>Semantic</td><td>-9.90</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E16_descending</td><td>Morphological</td><td>-9.68</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E11_alpha_parity</td><td>Numerical</td><td>-5.99</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E7_abjad_prime</td><td>Numerical</td><td>-5.46</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E12_high_freq</td><td>Statistical</td><td>-4.27</td><td><span class="badge badge-confirmed">BEYOND</span></td></tr>
+                        <tr><td>E3_emphasis</td><td>Phonetic</td><td>-1.02</td><td><span class="badge badge-pending">word-level</span></td></tr>
+                        <tr><td>E9_word_start</td><td>Positional</td><td>0.00</td><td><span class="badge badge-pending">expected</span></td></tr>
+                        <tr><td>E10_word_end</td><td>Positional</td><td>0.00</td><td><span class="badge badge-pending">expected</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>Density Distribution by Encoding</h2>
+                <div class="chart-container">
+                    <canvas id="densityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Key Findings</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3 style="color: var(--success);">✓ Confirmed</h3>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>Binary structure exists in all encodings</li>
+                        <li>13/16 encodings show structure beyond word boundaries</li>
+                        <li>Solar/lunar (E8) shows strongest pattern (z = -25.06)</li>
+                        <li>Pattern is deterministic and reproducible</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: var(--warn);">⚠ Pending Validation</h3>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>Semantic interpretation (sun=manifest, moon=hidden)</li>
+                        <li>Comparison with other Arabic texts</li>
+                        <li>Deliberate design vs linguistic artifact</li>
+                        <li>Interpretable "message" hypothesis</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Extreme Verses (E8_solar encoding)</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Highest Solar Density (Most "Manifest")</h3>
+                    <table>
+                        <tr><th>Reference</th><th>Density</th><th>Preview</th></tr>
+                        <tr><td>74:21</td><td>0.80</td><td>ثُمَّ نَظَرَ</td></tr>
+                        <tr><td>77:3</td><td>0.80</td><td>وَٱلنَّـٰشِرَٰتِ نَشۡرٗا</td></tr>
+                        <tr><td>79:2</td><td>0.80</td><td>وَٱلنَّـٰشِطَٰتِ نَشۡطٗا</td></tr>
+                        <tr><td>35:23</td><td>0.78</td><td>إِنۡ أَنتَ إِلَّا نَذِيرٌ</td></tr>
+                        <tr><td>99:1</td><td>0.76</td><td>إِذَا زُلۡزِلَتِ ٱلۡأَرۡضُ</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h3>Lowest Solar Density (Most "Hidden")</h3>
+                    <table>
+                        <tr><th>Reference</th><th>Density</th><th>Preview</th></tr>
+                        <tr><td>70:18</td><td>0.00</td><td>وَجَمَعَ فَأَوۡعَىٰٓ</td></tr>
+                        <tr><td>80:31</td><td>0.00</td><td>وَفَٰكِهَةٗ وَأَبّٗا</td></tr>
+                        <tr><td>80:35</td><td>0.00</td><td>وَأُمِّهِۦ وَأَبِيهِ</td></tr>
+                        <tr><td>101:9</td><td>0.00</td><td>فَأُمُّهُۥ هَاوِيَةٞ</td></tr>
+                        <tr><td>91:15</td><td>0.08</td><td>وَلَا يَخَافُ عُقۡبَٰهَا</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Scientific Rigor</h2>
+            <div class="methodology">
+                <p><strong>Null Hypothesis Testing:</strong></p>
+                <p class="formula">H₀: compression(E(Quran)) = compression(E(shuffled))</p>
+                <p>Rejection criterion: |z-score| > 2 (p < 0.05)</p>
+                <br>
+                <p><strong>Word-Level Control:</strong></p>
+                <p class="formula">H₀: compression(E(Quran)) = compression(E(word_shuffled))</p>
+                <p>Letters shuffled within words, preserving word boundaries</p>
+                <br>
+                <p><strong>Effect Size:</strong> Compression ratio difference ~0.002 (small but consistent)</p>
+                <p><strong>Replication:</strong> 50 shuffle iterations per test</p>
+                <p><strong>Multiple Comparisons:</strong> 16 encodings tested; Bonferroni correction would require p < 0.003</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Generated by PATTERN-READING Research System</p>
+            <p>Repository: github.com/cemphlvn/quranic_reading</p>
+        </footer>
+    </div>
+
+    <script>
+        // Density chart
+        const ctx = document.getElementById('densityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['E1_dot', 'E2_voice', 'E3_emphasis', 'E4_throat', 'E5_connect',
+                         'E6_abjad', 'E7_prime', 'E8_solar', 'E11_alpha', 'E12_freq',
+                         'E13_allah', 'E14_sym', 'E15_asc', 'E16_desc'],
+                datasets: [{
+                    label: 'Mean Density',
+                    data: [0.3448, 0.6035, 0.0431, 0.1791, 0.7016,
+                           0.2079, 0.1070, 0.3744, 0.4780, 0.8933,
+                           0.2422, 0.2798, 0.2838, 0.2411],
+                    backgroundColor: 'rgba(74, 158, 255, 0.6)',
+                    borderColor: 'rgba(74, 158, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { color: '#333' },
+                        ticks: { color: '#888', font: { size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
