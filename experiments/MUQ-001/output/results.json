@@ -1,0 +1,63 @@
+{
+  "حم": {
+    "surah_ids": [
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "observed_jaccard": 0.15425975260685412,
+    "observed_cosine": 0.7167652451554818,
+    "null_jaccard": 0.06520225139838835,
+    "null_cosine": 0.3924769200444748,
+    "p_jaccard": 0.0,
+    "p_cosine": 0.002
+  },
+  "الر": {
+    "surah_ids": [
+      10,
+      11,
+      12,
+      14,
+      15
+    ],
+    "observed_jaccard": 0.1437935454922421,
+    "observed_cosine": 0.7721605836871198,
+    "null_jaccard": 0.06515123520471769,
+    "null_cosine": 0.39037318333842247,
+    "p_jaccard": 0.002,
+    "p_cosine": 0.002
+  },
+  "الم": {
+    "surah_ids": [
+      2,
+      3,
+      29,
+      30,
+      31,
+      32
+    ],
+    "observed_jaccard": 0.1330932749726201,
+    "observed_cosine": 0.766344988446481,
+    "null_jaccard": 0.06543694676444756,
+    "null_cosine": 0.3943293199336405,
+    "p_jaccard": 0.002,
+    "p_cosine": 0.002
+  },
+  "طس": {
+    "surah_ids": [
+      26,
+      27,
+      28
+    ],
+    "observed_jaccard": 0.1486941307669548,
+    "observed_cosine": 0.7516362217737202,
+    "null_jaccard": 0.06354986173611576,
+    "null_cosine": 0.386978803138565,
+    "p_jaccard": 0.0,
+    "p_cosine": 0.02
+  }
+}
