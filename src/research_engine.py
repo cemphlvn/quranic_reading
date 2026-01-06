@@ -2,7 +2,7 @@
 RESEARCH ENGINE
 
 Systematic, repeatable research on semantic-to-binary encodings.
-Implements the formal methodology from REMEMBRANCE/METHODOLOGY.md
+Implements the formal methodology from docs/METHODOLOGY.md
 
 This engine:
 1. Defines multiple encoding functions
@@ -55,7 +55,9 @@ class NullTestResult:
     z_compression: float
     z_entropy: float
     z_autocorr: float
-    significant: bool
+    p_value: float  # Two-tailed p-value from z-score
+    significant_raw: bool  # Before Bonferroni (α=0.05)
+    significant_corrected: bool  # After Bonferroni (α=0.003125 for k=16)
     p_estimate: str
 
 
@@ -321,8 +323,28 @@ INTERPRETATIONS = [
 # NULL HYPOTHESIS TESTING
 # ============================================================
 
-def null_test(bitstring: str, n_shuffles: int = 50) -> NullTestResult:
-    """Test against null model (shuffled bitstring)."""
+# Statistical constants
+N_ENCODINGS = 16  # Number of encodings tested
+ALPHA = 0.05  # Base significance level
+ALPHA_CORRECTED = ALPHA / N_ENCODINGS  # Bonferroni: 0.003125
+Z_THRESHOLD_RAW = 1.96  # |z| for α=0.05 two-tailed
+Z_THRESHOLD_CORRECTED = 2.96  # |z| for α=0.003125 two-tailed
+
+
+def z_to_p(z: float) -> float:
+    """Convert z-score to two-tailed p-value using normal approximation."""
+    # Using error function approximation
+    import math
+    return 2 * (1 - 0.5 * (1 + math.erf(abs(z) / math.sqrt(2))))
+
+
+def null_test(bitstring: str, n_shuffles: int = 1000) -> NullTestResult:
+    """
+    Test against null model (shuffled bitstring).
+
+    Uses 1000 shuffle iterations for stable z-scores.
+    Reports both raw and Bonferroni-corrected significance.
+    """
     real_comp = compression_ratio(bitstring)
     real_ent = shannon_entropy(bitstring)
     real_ac = autocorrelation(bitstring, 1)
@@ -346,10 +368,25 @@ def null_test(bitstring: str, n_shuffles: int = 50) -> NullTestResult:
     z_e = z_score(real_ent, null_ent)
     z_a = z_score(real_ac, null_ac)
 
-    significant = abs(z_c) > 2 or abs(z_e) > 2 or abs(z_a) > 2
-    p_est = "p < 0.05" if significant else "p > 0.05"
+    # Use most significant z-score for p-value
+    z_max = max(abs(z_c), abs(z_e), abs(z_a))
+    p_val = z_to_p(z_max)
 
-    return NullTestResult(z_c, z_e, z_a, significant, p_est)
+    # Significance tests
+    sig_raw = z_max > Z_THRESHOLD_RAW
+    sig_corrected = z_max > Z_THRESHOLD_CORRECTED
+
+    # Human-readable p-value
+    if p_val < 0.0001:
+        p_est = f"p < 0.0001 (z={z_max:.2f})"
+    elif p_val < ALPHA_CORRECTED:
+        p_est = f"p = {p_val:.4f} < {ALPHA_CORRECTED:.4f} (corrected)"
+    elif p_val < ALPHA:
+        p_est = f"p = {p_val:.4f} < 0.05 (uncorrected only)"
+    else:
+        p_est = f"p = {p_val:.4f} (not significant)"
+
+    return NullTestResult(z_c, z_e, z_a, p_val, sig_raw, sig_corrected, p_est)
 
 
 # ============================================================
@@ -384,12 +421,15 @@ def run_experiment(encoding_name: str, encode_fn: Callable, text: str) -> Experi
     # Interpretations
     interp_results = [fn(bitstring) for fn in INTERPRETATIONS]
 
-    # Verdict
-    if null_result.significant:
-        verdict = "STRUCTURE_EXISTS"
+    # Verdict (use Bonferroni-corrected significance)
+    if null_result.significant_corrected:
+        verdict = "SIGNIFICANT (corrected)"
         valid = True
+    elif null_result.significant_raw:
+        verdict = "SIGNIFICANT (uncorrected)"
+        valid = False  # Not valid under strict criteria
     else:
-        verdict = "NO_SIGNIFICANT_STRUCTURE"
+        verdict = "NOT SIGNIFICANT"
         valid = False
 
     return ExperimentResult(enc_result, null_result, interp_results, verdict, valid)
@@ -407,23 +447,24 @@ def run_all_experiments(text: str) -> List[ExperimentResult]:
 
 def print_results(results: List[ExperimentResult]):
     """Print formatted results."""
-    print("\n" + "="*80)
+    print("\n" + "="*90)
     print("RESEARCH ENGINE: SYSTEMATIC ENCODING ANALYSIS")
-    print("="*80)
+    print(f"Statistical threshold: |z| > {Z_THRESHOLD_CORRECTED:.2f} (Bonferroni α={ALPHA_CORRECTED:.4f})")
+    print("="*90)
 
-    print("\n{:<20} {:>10} {:>10} {:>10} {:>12} {:>15}".format(
-        "Encoding", "Length", "Density", "Compress", "Z-compress", "Verdict"
+    print("\n{:<18} {:>8} {:>8} {:>10} {:>12} {:>25}".format(
+        "Encoding", "Length", "Density", "Compress", "Z-score", "Verdict"
     ))
-    print("-"*80)
+    print("-"*90)
 
     for r in results:
-        print("{:<20} {:>10} {:>10.4f} {:>10.4f} {:>12.2f} {:>15}".format(
+        print("{:<18} {:>8} {:>8.4f} {:>10.4f} {:>12.2f} {:>25}".format(
             r.encoding.encoding_name,
             r.encoding.length,
             r.encoding.density,
             r.encoding.compression,
             r.null_test.z_compression,
-            "VALID" if r.valid else "invalid"
+            r.verdict
         ))
 
     print("\n" + "="*80)
@@ -473,10 +514,11 @@ def main():
             "valid": r.valid
         })
 
-    with open("projects/alpha/data/experiment_results.json", "w") as f:
+    Path("output/data").mkdir(parents=True, exist_ok=True)
+    with open("output/data/experiment_results.json", "w") as f:
         json.dump(output, f, indent=2)
 
-    print("\nResults saved to projects/alpha/data/experiment_results.json")
+    print("\nResults saved to output/data/experiment_results.json")
 
     return results
 

@@ -49,8 +49,25 @@ def shuffle_within_words(text: str) -> str:
     return ''.join(result)
 
 
-def word_controlled_test(name: str, encode_fn: Callable, text: str, n_shuffles: int = 30):
-    """Test encoding against word-preserving null model."""
+# Statistical constants
+import math
+N_ENCODINGS = 16
+ALPHA = 0.05
+ALPHA_CORRECTED = ALPHA / N_ENCODINGS  # 0.003125
+Z_THRESHOLD_RAW = 1.96
+Z_THRESHOLD_CORRECTED = 2.96
+
+
+def z_to_p(z: float) -> float:
+    """Convert z-score to two-tailed p-value."""
+    return 2 * (1 - 0.5 * (1 + math.erf(abs(z) / math.sqrt(2))))
+
+
+def word_controlled_test(name: str, encode_fn: Callable, text: str, n_shuffles: int = 1000):
+    """
+    Test encoding against word-preserving null model.
+    Uses 1000 iterations and Bonferroni correction.
+    """
     # Encode real text
     real_bits = encode_fn(text)
     if len(real_bits) < 100:
@@ -74,22 +91,30 @@ def word_controlled_test(name: str, encode_fn: Callable, text: str, n_shuffles: 
     else:
         z_score = 0
 
+    p_value = z_to_p(z_score)
+    sig_raw = abs(z_score) > Z_THRESHOLD_RAW
+    sig_corrected = abs(z_score) > Z_THRESHOLD_CORRECTED
+
     return {
         'name': name,
         'real_compression': real_comp,
         'null_mean': null_mean,
         'null_std': null_std,
         'z_score': z_score,
-        'significant': abs(z_score) > 2,
-        'direction': 'more_structured' if z_score < -2 else ('less_structured' if z_score > 2 else 'same')
+        'p_value': p_value,
+        'significant_raw': sig_raw,
+        'significant_corrected': sig_corrected,
+        'direction': 'more_structured' if z_score < -Z_THRESHOLD_CORRECTED else (
+            'less_structured' if z_score > Z_THRESHOLD_CORRECTED else 'same')
     }
 
 
 def main():
-    """Run controlled analysis."""
-    print("="*80)
+    """Run controlled analysis with Bonferroni correction."""
+    print("="*90)
     print("CONTROLLED ANALYSIS: STRUCTURE BEYOND WORD BOUNDARIES")
-    print("="*80)
+    print(f"Statistical: n=1000 shuffles, Bonferroni α={ALPHA_CORRECTED:.4f}, |z|>{Z_THRESHOLD_CORRECTED}")
+    print("="*90)
     print()
     print("Null model: Letters shuffled WITHIN words (preserving word structure)")
     print("Test: Does encoding reveal structure BEYOND what words explain?")
@@ -102,47 +127,61 @@ def main():
 
     # Test each encoding
     results = []
-    print("\nTesting encodings (this may take a while)...")
+    print("\nTesting encodings (1000 shuffles each, this will take a while)...")
 
     for name, fn in ALL_ENCODINGS.items():
-        result = word_controlled_test(name, fn, text, n_shuffles=20)
+        result = word_controlled_test(name, fn, text, n_shuffles=1000)
         if result:
             results.append(result)
-            sig = "***" if result['significant'] else ""
-            print(f"  {name}: z={result['z_score']:.2f} {sig}")
+            if result['significant_corrected']:
+                sig = "✓✓"
+            elif result['significant_raw']:
+                sig = "✓ "
+            else:
+                sig = "✗ "
+            print(f"  {sig} {name}: z={result['z_score']:.2f}, p={result['p_value']:.4f}")
 
     # Sort by z-score
     results.sort(key=lambda x: x['z_score'])
 
     # Print report
-    print("\n" + "="*80)
+    print("\n" + "="*90)
     print("RESULTS: ENCODING STRUCTURE BEYOND WORD BOUNDARIES")
-    print("="*80)
+    print(f"Bonferroni correction: α={ALPHA_CORRECTED:.4f}")
+    print("="*90)
 
-    print("\n{:<20} {:>12} {:>12} {:>12} {:>15}".format(
-        "Encoding", "Real Comp", "Null Mean", "Z-score", "Beyond Words?"
+    print("\n{:<18} {:>10} {:>10} {:>10} {:>10} {:>22}".format(
+        "Encoding", "Real Comp", "Null Mean", "Z-score", "p-value", "Beyond Words?"
     ))
-    print("-"*80)
+    print("-"*90)
 
     for r in results:
-        beyond = "YES" if r['significant'] and r['direction'] == 'more_structured' else "no"
-        print("{:<20} {:>12.4f} {:>12.4f} {:>12.2f} {:>15}".format(
-            r['name'], r['real_compression'], r['null_mean'], r['z_score'], beyond
+        if r['significant_corrected'] and r['direction'] == 'more_structured':
+            beyond = "YES (corrected)"
+        elif r['significant_raw'] and r['direction'] == 'more_structured':
+            beyond = "yes (uncorrected)"
+        else:
+            beyond = "no"
+        print("{:<18} {:>10.4f} {:>10.4f} {:>10.2f} {:>10.4f} {:>22}".format(
+            r['name'], r['real_compression'], r['null_mean'], r['z_score'], r['p_value'], beyond
         ))
 
     # Summary
-    beyond_words = [r for r in results if r['significant'] and r['direction'] == 'more_structured']
+    beyond_corrected = [r for r in results if r['significant_corrected'] and r['direction'] == 'more_structured']
+    beyond_raw = [r for r in results if r['significant_raw'] and not r['significant_corrected'] and r['direction'] == 'more_structured']
 
-    print("\n" + "="*80)
+    print("\n" + "="*90)
     print("SUMMARY")
-    print("="*80)
+    print("="*90)
 
-    print(f"\nEncodings with structure BEYOND word boundaries: {len(beyond_words)}/{len(results)}")
+    print(f"\nEncodings with structure BEYOND word boundaries:")
+    print(f"  Bonferroni-corrected: {len(beyond_corrected)}/{len(results)}")
+    print(f"  Uncorrected only: {len(beyond_raw)}/{len(results)}")
 
-    if beyond_words:
-        print("\nThese encodings show structure that cannot be explained by word-level patterns:")
-        for r in beyond_words:
-            print(f"  - {r['name']}: z={r['z_score']:.2f}")
+    if beyond_corrected:
+        print("\nSignificant after Bonferroni correction (robust findings):")
+        for r in beyond_corrected:
+            print(f"  - {r['name']}: z={r['z_score']:.2f}, p={r['p_value']:.6f}")
 
         print("\nInterpretation:")
         print("  These patterns exist in the ARRANGEMENT of specific letter types")
@@ -150,9 +189,9 @@ def main():
         print("  This could indicate:")
         print("    1. Phonetic patterns (euphony, tajweed)")
         print("    2. Morphological patterns (root/pattern system)")
-        print("    3. Deliberate structure (unknown cause)")
+        print("    3. General Arabic language properties (NOT proven Quran-specific)")
     else:
-        print("\nNo encoding shows structure beyond word boundaries.")
+        print("\nNo encoding shows structure beyond word boundaries after correction.")
         print("All observed structure can be explained by word-level patterns.")
         print("The 'hidden message' hypothesis is NOT supported.")
 

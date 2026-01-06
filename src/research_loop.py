@@ -137,6 +137,13 @@ ALL_ENCODINGS = {
 # RESEARCH LOOP
 # ============================================================
 
+# Statistical constants (same as research_engine.py)
+N_ENCODINGS = 16
+ALPHA = 0.05
+ALPHA_CORRECTED = ALPHA / N_ENCODINGS  # 0.003125
+Z_THRESHOLD_CORRECTED = 2.96
+
+
 @dataclass
 class FindingSummary:
     """Summary of one encoding's findings."""
@@ -145,12 +152,14 @@ class FindingSummary:
     density: float
     compression: float
     z_score: float
-    significant: bool
+    p_value: float
+    significant_raw: bool
+    significant_corrected: bool
     interpretation_notes: str
 
 
-def run_encoding_test(name: str, fn, text: str, n_null: int = 30) -> FindingSummary:
-    """Test one encoding thoroughly."""
+def run_encoding_test(name: str, fn, text: str, n_null: int = 1000) -> FindingSummary:
+    """Test one encoding with 1000 shuffle iterations and Bonferroni correction."""
     bits = fn(text)
     if len(bits) < 100:
         return None
@@ -159,7 +168,7 @@ def run_encoding_test(name: str, fn, text: str, n_null: int = 30) -> FindingSumm
     c = compression_ratio(bits)
     runs = run_length_analysis(bits)
 
-    # Null test
+    # Null test with corrected statistics
     null = null_test(bits, n_null)
 
     # Generate interpretation notes
@@ -181,16 +190,19 @@ def run_encoding_test(name: str, fn, text: str, n_null: int = 30) -> FindingSumm
         density=d,
         compression=c,
         z_score=null.z_compression,
-        significant=null.significant,
+        p_value=null.p_value,
+        significant_raw=null.significant_raw,
+        significant_corrected=null.significant_corrected,
         interpretation_notes="; ".join(notes) if notes else "standard"
     )
 
 
 def run_research_loop(text: str, iterations: int = 1) -> List[FindingSummary]:
-    """Main research loop."""
-    print("="*80)
+    """Main research loop with 1000 shuffle iterations and Bonferroni correction."""
+    print("="*90)
     print("RESEARCH LOOP: SYSTEMATIC ANALYSIS")
-    print("="*80)
+    print(f"Statistical: n=1000 shuffles, Bonferroni α={ALPHA_CORRECTED:.4f}, |z|>{Z_THRESHOLD_CORRECTED}")
+    print("="*90)
     print(f"\nEncodings to test: {len(ALL_ENCODINGS)}")
     print(f"Iterations: {iterations}")
 
@@ -204,8 +216,13 @@ def run_research_loop(text: str, iterations: int = 1) -> List[FindingSummary]:
             result = run_encoding_test(name, fn, text)
             if result:
                 results.append(result)
-                status = "✓" if result.significant else "✗"
-                print(f"  {status} {name}: z={result.z_score:.2f}, d={result.density:.3f}")
+                if result.significant_corrected:
+                    status = "✓✓"
+                elif result.significant_raw:
+                    status = "✓ "
+                else:
+                    status = "✗ "
+                print(f"  {status} {name}: z={result.z_score:.2f}, p={result.p_value:.4f}")
 
         all_results.extend(results)
 
@@ -216,55 +233,63 @@ def run_research_loop(text: str, iterations: int = 1) -> List[FindingSummary]:
 
 
 def print_final_report(results: List[FindingSummary]):
-    """Print comprehensive report."""
-    print("\n" + "="*80)
+    """Print comprehensive report with Bonferroni-corrected significance."""
+    print("\n" + "="*90)
     print("FINAL REPORT: ALL ENCODINGS RANKED BY STRUCTURE")
-    print("="*80)
+    print(f"Bonferroni correction: α={ALPHA_CORRECTED:.4f}, |z|>{Z_THRESHOLD_CORRECTED}")
+    print("="*90)
 
-    print("\n{:<20} {:>8} {:>10} {:>10} {:>12} {:>10}".format(
-        "Encoding", "Length", "Density", "Compress", "Z-score", "Status"
+    print("\n{:<18} {:>8} {:>8} {:>8} {:>10} {:>10} {:>20}".format(
+        "Encoding", "Length", "Density", "Comp", "Z-score", "p-value", "Status"
     ))
-    print("-"*80)
+    print("-"*90)
 
     for r in results:
-        status = "VALID" if r.significant else "invalid"
-        print("{:<20} {:>8} {:>10.4f} {:>10.4f} {:>12.2f} {:>10}".format(
-            r.encoding, r.length, r.density, r.compression, r.z_score, status
+        if r.significant_corrected:
+            status = "SIGNIFICANT (corr)"
+        elif r.significant_raw:
+            status = "significant (raw)"
+        else:
+            status = "not significant"
+        print("{:<18} {:>8} {:>8.4f} {:>8.4f} {:>10.2f} {:>10.4f} {:>20}".format(
+            r.encoding, r.length, r.density, r.compression, r.z_score, r.p_value, status
         ))
 
     # Summary statistics
-    valid = [r for r in results if r.significant]
-    invalid = [r for r in results if not r.significant]
+    valid_corrected = [r for r in results if r.significant_corrected]
+    valid_raw = [r for r in results if r.significant_raw and not r.significant_corrected]
+    invalid = [r for r in results if not r.significant_raw]
 
-    print("\n" + "="*80)
+    print("\n" + "="*90)
     print("SUMMARY")
-    print("="*80)
+    print("="*90)
     print(f"\nTotal encodings tested: {len(results)}")
-    print(f"Valid (significant structure): {len(valid)}")
-    print(f"Invalid (no significant structure): {len(invalid)}")
+    print(f"Significant (Bonferroni-corrected): {len(valid_corrected)}")
+    print(f"Significant (uncorrected only): {len(valid_raw)}")
+    print(f"Not significant: {len(invalid)}")
 
-    if valid:
+    if valid_corrected:
         # Top 5 by structure
-        print("\nTOP 5 ENCODINGS BY STRUCTURE:")
-        for i, r in enumerate(valid[:5], 1):
-            print(f"  {i}. {r.encoding}: z={r.z_score:.2f}")
+        print("\nTOP 5 ENCODINGS BY STRUCTURE (Bonferroni-corrected):")
+        for i, r in enumerate(valid_corrected[:5], 1):
+            print(f"  {i}. {r.encoding}: z={r.z_score:.2f}, p={r.p_value:.6f}")
             if r.interpretation_notes != "standard":
                 print(f"     Notes: {r.interpretation_notes}")
 
         # Categorize by interpretation type
-        print("\nFINDINGS BY CATEGORY:")
+        print("\nFINDINGS BY CATEGORY (corrected only):")
 
-        morphological = [r for r in valid if r.encoding in ['E1_dot', 'E5_connect', 'E14_symmetric', 'E15_ascending', 'E16_descending']]
-        phonetic = [r for r in valid if r.encoding in ['E2_voice', 'E3_emphasis', 'E4_throat', 'E8_solar']]
-        numerical = [r for r in valid if r.encoding in ['E6_abjad_parity', 'E7_abjad_prime', 'E11_alpha_parity']]
-        positional = [r for r in valid if r.encoding in ['E9_word_start', 'E10_word_end']]
-        semantic = [r for r in valid if r.encoding in ['E12_high_freq', 'E13_allah_letter']]
+        morphological = [r for r in valid_corrected if r.encoding in ['E1_dot', 'E5_connect', 'E14_symmetric', 'E15_ascending', 'E16_descending']]
+        phonetic = [r for r in valid_corrected if r.encoding in ['E2_voice', 'E3_emphasis', 'E4_throat', 'E8_solar']]
+        numerical = [r for r in valid_corrected if r.encoding in ['E6_abjad_parity', 'E7_abjad_prime', 'E11_alpha_parity']]
+        positional = [r for r in valid_corrected if r.encoding in ['E9_word_start', 'E10_word_end']]
+        semantic = [r for r in valid_corrected if r.encoding in ['E12_high_freq', 'E13_allah_letter']]
 
-        print(f"  Morphological: {len(morphological)}/{len(valid)}")
-        print(f"  Phonetic: {len(phonetic)}/{len(valid)}")
-        print(f"  Numerical: {len(numerical)}/{len(valid)}")
-        print(f"  Positional: {len(positional)}/{len(valid)}")
-        print(f"  Semantic: {len(semantic)}/{len(valid)}")
+        print(f"  Morphological: {len(morphological)}/{len(valid_corrected)}")
+        print(f"  Phonetic: {len(phonetic)}/{len(valid_corrected)}")
+        print(f"  Numerical: {len(numerical)}/{len(valid_corrected)}")
+        print(f"  Positional: {len(positional)}/{len(valid_corrected)}")
+        print(f"  Semantic: {len(semantic)}/{len(valid_corrected)}")
 
     # Key insight
     print("\n" + "="*80)
@@ -297,10 +322,11 @@ def main():
 
     # Save results
     output = [asdict(r) for r in results]
-    with open("projects/alpha/data/research_loop_results.json", "w") as f:
+    Path("output/data").mkdir(parents=True, exist_ok=True)
+    with open("output/data/research_loop_results.json", "w") as f:
         json.dump(output, f, indent=2)
 
-    print("\nResults saved to projects/alpha/data/research_loop_results.json")
+    print("\nResults saved to output/data/research_loop_results.json")
 
     return results
 

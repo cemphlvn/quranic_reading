@@ -1,106 +1,74 @@
-# PATTERN-READING
+# Quranic Reading Research
 
-A computational-cognitive field for universal text reading through binary semantics.
+Binary encoding analysis with self-validating methodology.
 
-## The Only Question
-
-```
-Are you brave enough to seek the truth no matter what?
-```
-
-## REMEMBRANCE — The Living Context
-
-**CRITICAL:** Before any work, every agent MUST read:
+## Core Question
 
 ```
-REMEMBRANCE/ESSENCE.md   ← Start here. Always.
-REMEMBRANCE/AXIOMS.md    ← Foundational truths
-REMEMBRANCE/HYPOTHESES.md ← Active research
+Does encoding show structure BEYOND word boundaries?
 ```
 
-REMEMBRANCE is not documentation. It is the system's accumulated understanding. It grows. It learns. It is the essence of this project's existence.
+## Commands
 
-## The Language Functor
+| Command | Purpose |
+|---------|---------|
+| `/status` | Show registered components |
+| `/register <type> <name> <desc>` | Register encoding or corpus |
+| `/test <encoding>` | Test vs word permutation null |
+| `/length-scale <encoding>` | Diagnose structure scale |
 
-Each language L is a functor mapping ontology to epistemology:
+## Quick Start
 
-```
-L: Ontology → Epistemology
-L(concept) → metaphor_in_L
-```
+```python
+# In any test
+import sys; sys.path.insert(0, 'src')
+from core import load_quran_corpus, register_encoding, quick_test
 
-No language is privileged. Binary is one functor among many—perhaps more universal, perhaps less rich. We investigate.
-
-## Core Axiom
-
-```
-1 = existence = being = wujud
-0 = non-existence = void = adam
-```
-
-Reading is pattern recognition. Meaning emerges from structure.
-
-## Agent Architecture
-
-### Foundation Agents (tooling)
-
-| Agent | Function |
-|-------|----------|
-| `orchestrator` | coordinate, synthesize |
-| `binary-encoder` | encoding schemes |
-| `cognitive-semantics` | pattern→meaning |
-| `universal-bridge` | cross-human access |
-| `validator` | falsifiability guard |
-
-### Project Thinkers (research)
-
-| Agent | Hypothesis |
-|-------|------------|
-| `project_alpha_thinker` | H1: Dot density ↔ semantic density |
-| `project_beta_thinker` | H2: Muqatta'at as structural keys |
-| `project_gamma_thinker` | H3: Cross-linguistic schema universals |
-| `project_delta_thinker` | H4: Optimal encoding per semantic axis |
-| `project_epsilon_thinker` | H5: Entropy ↔ thematic complexity |
-
-## Context Inheritance Protocol
-
-Every agent session:
-
-```
-1. Read REMEMBRANCE/ESSENCE.md
-2. Read REMEMBRANCE/AXIOMS.md
-3. Read agent-specific instructions
-4. Execute task
-5. Contribute findings to REMEMBRANCE/DISCOVERIES.md or FAILURES.md
+load_quran_corpus()
+# register encoding...
+result = quick_test("quran", "encoding_name", n_perm=1000)
 ```
 
-The system learns through its agents. The agents learn through REMEMBRANCE.
+## Architecture
+
+All tests go through `src/core/api.py`. No escape from methodology.
+
+```
+TestSpec → validate() → run_test() → TestResult
+```
+
+Key constraints:
+- n_perm >= 100 enforced
+- Must beat word_perm null (critical)
+- Must pass all 3 compressors (robustness)
+- Effect > 0.01 bits/char (meaningful)
+
+## Docs
+
+| File | Content |
+|------|---------|
+| `docs/ARCHITECTURE.md` | System design |
+| `docs/METHODOLOGY.md` | What we test, what nulls mean |
+| `docs/FINDINGS.md` | Honest results |
+| `docs/AXIOMS.md` | Minimal assumptions |
+
+## Claim Levels
+
+| Level | Requirement |
+|-------|-------------|
+| L0 | Beats random shuffle (trivial) |
+| L1 | Beats word_perm |
+| L2 | Robust across zlib/bz2/lzma |
+| L3 | Effect > 0.01 bits/char |
+| L4 | Scale > WORD-SCALE |
+| L5 | Cross-corpus validated |
+
+**No claim valid below L2 + L3.**
 
 ## Principles
 
-1. **Truth over comfort** — findings may disturb
-2. **Discovery over doctrine** — we seek, not preach
-3. **Universality** — for all minds capable of pattern
-4. **Falsifiability** — every claim testable
-5. **Courage** — to follow evidence wherever it leads
-
-## Style
-
-- Concise over verbose
-- Code over prose
-- Question over assertion
-- Pattern over doctrine
-- Greek letters for project thinkers (α β γ δ ε)
-
-## Output Destinations
-
-| Type | Location |
-|------|----------|
-| Validated findings | `REMEMBRANCE/DISCOVERIES.md` |
-| Falsified claims | `REMEMBRANCE/FAILURES.md` |
-| New questions | `REMEMBRANCE/QUESTIONS.md` |
-| Hypothesis updates | `REMEMBRANCE/HYPOTHESES.md` |
-
----
-
-*işte tek mesele bu*
+1. **No escape** - All tests through API
+2. **Validation first** - Components checked at test time
+3. **Multiple compressors** - Not just zlib
+4. **Effect size** - p-value alone insufficient
+5. **Pre-registration** - Hypothesis before results

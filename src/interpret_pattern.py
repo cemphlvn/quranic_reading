@@ -205,10 +205,11 @@ def main():
         'sample_verses': verse_data[:100]
     }
 
-    with open("projects/alpha/data/interpretation_results.json", "w") as f:
+    Path("output/data").mkdir(parents=True, exist_ok=True)
+    with open("output/data/interpretation_results.json", "w") as f:
         json.dump(output, f, indent=2, default=str)
 
-    print("\nResults saved to projects/alpha/data/interpretation_results.json")
+    print("\nResults saved to output/data/interpretation_results.json")
 
 
 if __name__ == "__main__":
