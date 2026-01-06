@@ -1,0 +1,44 @@
+{
+  "threat_mercy": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  },
+  "narrative_normative": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  },
+  "immanence_transcendence": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  },
+  "intimacy_majesty": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  },
+  "certainty_contention": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  },
+  "hope_fear": {
+    "neg_count": 0,
+    "pos_count": 0,
+    "overlap": 0,
+    "neg_sufficient": false,
+    "pos_sufficient": false
+  }
+}

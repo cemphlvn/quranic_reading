@@ -43,6 +43,9 @@ Twenty-nine Quranic surahs begin with mysterious letter combinations called *muq
 | [MUQ-001](experiments/MUQ-001/) | Muqattaat Themes | Same-code surahs share themes | **CONFIRMED** (p<0.002) | Complete |
 | [STR-001](experiments/STR-001/) | Structure Localization | Find where structure exists | Mixed: 51% cross-verse | Complete |
 | [ORD-001](experiments/ORD-001/) | Ordinal Encoding | Letter-order has structure | Weak signal found | Complete |
+| [SEM-001](experiments/SEM-001/) | Semantic Graph | Muqattaat cluster semantically | **NEGATIVE** | Complete |
+| [SEM-002](experiments/SEM-002/) | Semantic Flow | Surahs = semantic units | **CONFIRMED** (1.9x novelty) | Complete |
+| [SEM-003](experiments/SEM-003/) | Semantic Axes | Rhetorical axes detectable | **INVALID** (methodology flaw) | Archived |
 
 ---
 
@@ -55,11 +58,15 @@ Twenty-nine Quranic surahs begin with mysterious letter combinations called *muq
 | Muqattaat mark thematic sections | 2x similarity, p<0.002 | **High** |
 | Cross-word structure exists | Beats word permutation | **High** |
 | Surahs with refrains show structure | Ar-Rahman, Ash-Shu'ara top | **High** |
+| Surahs are semantic units | 1.9x novelty at boundaries | **High** |
+| Meccan ≠ Medinan signatures | Novelty/coherence differ | **High** |
 
 ### Negative Results (Null Not Rejected)
 
 | Hypothesis | Outcome | Interpretation |
 |------------|---------|----------------|
+| Muqattaat = semantic clusters | Purity 18-30% (random: 20%) | Operates at lexical level only |
+| Surahs = semantic boundaries | Ratio 1.01x (no difference) | Uniform semantic density |
 | Gematria codes | No significant pattern | Code 19 claims unsupported |
 | Letter parity patterns | Expected null behavior | Confirms methodology works |
 | Ordinal high/low split | Expected null behavior | Arbitrary splits show nothing |
@@ -130,7 +137,10 @@ quranic_reading/
 │   │   ├── src/                # Analysis scripts
 │   │   └── output/             # Results, figures, paper
 │   ├── STR-001/                # Structure localization
-│   └── ORD-001/                # Ordinal encoding tests
+│   ├── ORD-001/                # Ordinal encoding tests
+│   ├── SEM-001/                # Semantic graph (LLM embeddings)
+│   ├── SEM-002/                # Semantic flow (sequential analysis)
+│   └── SEM-003/                # Rhetorical axes (6 sentiment dimensions)
 ├── src/
 │   ├── core/                   # Framework (API, stats, nulls)
 │   └── encoding_functions/     # Shared encoding implementations
@@ -148,7 +158,7 @@ quranic_reading/
 # Clone and setup
 git clone [repo] && cd quranic_reading
 python -m venv .venv && source .venv/bin/activate
-pip install matplotlib numpy
+pip install matplotlib numpy sentence-transformers networkx python-louvain
 
 # Run main finding
 python experiments/MUQ-001/src/analysis.py

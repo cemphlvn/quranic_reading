@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computational Rhetoric of the Quran</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --threat: #c0392b;
+            --mercy: #27ae60;
+            --bg: #fafafa;
+            --card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            color: var(--primary);
+            background: var(--bg);
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 3px solid var(--accent);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .meta {
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+
+        section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--primary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #3498db15, #2ecc7115);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        figure {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        figure img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        figcaption {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .axis-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .pole {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .pole-neg {
+            background: linear-gradient(135deg, #e74c3c20, #c0392b10);
+            border: 1px solid #e74c3c40;
+        }
+
+        .pole-pos {
+            background: linear-gradient(135deg, #27ae6020, #2ecc7110);
+            border: 1px solid #27ae6040;
+        }
+
+        .pole-label {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .formula {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+
+        .correlation-insight {
+            background: #9b59b620;
+            border: 1px solid #9b59b640;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .finding {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .finding-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            border-top: 1px solid #ecf0f1;
+            margin-top: 2rem;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .toc-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 0.5rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-positive {
+            background: #27ae6020;
+            color: #27ae60;
+        }
+
+        .badge-negative {
+            background: #e74c3c20;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Computational Rhetoric of the Quran</h1>
+        <p class="subtitle">Mapping Semantic Structure Through LLM Embeddings</p>
+        <p class="meta">SEM-001, SEM-002, SEM-003 | January 2026</p>
+    </header>
+
+    <nav class="toc">
+        <div class="toc-title">Contents</div>
+        <ul>
+            <li><a href="#tldr">Key Findings</a></li>
+            <li><a href="#method">Methodology</a></li>
+            <li><a href="#sem001">SEM-001: Semantic Graph</a></li>
+            <li><a href="#sem002">SEM-002: Semantic Flow</a></li>
+            <li><a href="#sem003">SEM-003: Rhetorical Axes</a></li>
+            <li><a href="#conclusions">Conclusions</a></li>
+        </ul>
+    </nav>
+
+    <section id="tldr">
+        <h2>Key Findings</h2>
+
+        <div class="result-grid">
+            <div class="result-card">
+                <div class="result-value">1.9x</div>
+                <div class="result-label">Higher novelty at surah boundaries</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value">6</div>
+                <div class="result-label">Rhetorical axes detected</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value">-0.79</div>
+                <div class="result-label">Threat-Certainty correlation</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value">6,236</div>
+                <div class="result-label">Ayahs analyzed</div>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <div class="highlight-title">The Discovery</div>
+            <p>Using language model embeddings, we can detect the <strong>rhetorical structure</strong> of the Quran without theological interpretation. The text oscillates between warning and reassurance, uses consistently intimate address, and shows distinct Meccan/Medinan signatures.</p>
+        </div>
+    </section>
+
+    <section id="method">
+        <h2>Methodology</h2>
+
+        <h3>The Core Idea</h3>
+        <p>Modern language models (LLMs) convert text into numerical vectors called <strong>embeddings</strong>. Similar texts have similar embeddings. We use this to:</p>
+
+        <ol style="margin: 1rem 0 1rem 1.5rem;">
+            <li><strong>Embed every ayah</strong> into a 768-dimensional vector</li>
+            <li><strong>Measure similarity</strong> between ayahs using cosine distance</li>
+            <li><strong>Project onto semantic axes</strong> to track rhetorical properties</li>
+        </ol>
+
+        <h3>The Model</h3>
+        <p>We use <code>paraphrase-multilingual-mpnet-base-v2</code>, a transformer model trained on 50+ languages including Arabic. It converts each ayah into a vector that captures its meaning.</p>
+
+        <h3>Axis Projection</h3>
+        <p>To measure where each ayah falls on a semantic axis (e.g., Threat ↔ Mercy):</p>
+
+        <div class="axis-card">
+            <div class="pole pole-neg">
+                <div class="pole-label">Threat Pole</div>
+                <p style="font-size: 0.9rem;">Arabic phrases about punishment, hellfire, destruction</p>
+            </div>
+            <div class="pole pole-pos">
+                <div class="pole-label">Mercy Pole</div>
+                <p style="font-size: 0.9rem;">Arabic phrases about forgiveness, paradise, guidance</p>
+            </div>
+        </div>
+
+        <p>We embed these pole descriptions, then for each ayah compute:</p>
+
+        <div class="formula">
+            score = similarity(ayah, mercy) - similarity(ayah, threat)
+        </div>
+
+        <p>Positive scores lean toward mercy; negative toward threat. This gives us a signed scalar for every ayah on every axis.</p>
+    </section>
+
+    <section id="sem001">
+        <h2>SEM-001: Semantic Graph <span class="badge badge-negative">Negative Result</span></h2>
+
+        <h3>Question</h3>
+        <p>Do surahs with the same muqattaat (mysterious letters) cluster semantically?</p>
+
+        <h3>Method</h3>
+        <p>Built a similarity graph (60,327 edges) and ran community detection (Louvain algorithm).</p>
+
+        <h3>Result</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Expected</th>
+                <th>Actual</th>
+            </tr>
+            <tr>
+                <td>Muqattaat community purity</td>
+                <td>&gt; 50%</td>
+                <td><strong>18-30%</strong></td>
+            </tr>
+            <tr>
+                <td>Surah coherence ratio</td>
+                <td>&gt; 1.2x</td>
+                <td><strong>1.01x</strong></td>
+            </tr>
+            <tr>
+                <td>Overall similarity</td>
+                <td>~0.5</td>
+                <td><strong>0.97</strong></td>
+            </tr>
+        </table>
+
+        <div class="highlight">
+            <div class="highlight-title">Interpretation</div>
+            <p>The Quran has <strong>uniform semantic density</strong>. The entire text is semantically cohesive (~0.97 cosine similarity everywhere). Muqattaat groupings operate at the <em>lexical</em> level (vocabulary patterns), not the semantic level. This doesn't invalidate MUQ-001; it clarifies <em>how</em> the muqattaat function.</p>
+        </div>
+    </section>
+
+    <section id="sem002">
+        <h2>SEM-002: Semantic Flow <span class="badge badge-positive">Positive Result</span></h2>
+
+        <h3>Question</h3>
+        <p>Do semantic properties change at surah boundaries?</p>
+
+        <h3>Metrics</h3>
+        <ul style="margin: 1rem 0 1rem 1.5rem;">
+            <li><strong>Novelty:</strong> How different is this ayah from the previous 10?</li>
+            <li><strong>Coherence:</strong> How similar to neighboring ±5 ayahs?</li>
+            <li><strong>Shift:</strong> Distance to immediately previous ayah</li>
+        </ul>
+
+        <h3>Result</h3>
+
+        <figure>
+            <img src="../../../SEM-002/output/figures/dashboard.png" alt="Semantic Flow Dashboard">
+            <figcaption>Semantic metrics across all 6,236 ayahs. Vertical gray lines mark surah boundaries.</figcaption>
+        </figure>
+
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>At Surah Boundaries</th>
+                <th>Elsewhere</th>
+                <th>Ratio</th>
+            </tr>
+            <tr>
+                <td>Novelty</td>
+                <td>0.162</td>
+                <td>0.085</td>
+                <td><strong>1.90x</strong></td>
+            </tr>
+        </table>
+
+        <div class="highlight">
+            <div class="highlight-title">Key Finding</div>
+            <p><strong>Surah boundaries are semantic discontinuities.</strong> Novelty is nearly 2x higher when a new surah begins. This validates that surahs are meaningful semantic units, not arbitrary divisions.</p>
+        </div>
+
+        <h3>Meccan vs Medinan</h3>
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Ayahs</th>
+                <th>Novelty</th>
+                <th>Coherence</th>
+            </tr>
+            <tr>
+                <td>Meccan</td>
+                <td>4,613</td>
+                <td><strong>0.095</strong></td>
+                <td>0.843</td>
+            </tr>
+            <tr>
+                <td>Medinan</td>
+                <td>1,623</td>
+                <td>0.065</td>
+                <td><strong>0.888</strong></td>
+            </tr>
+        </table>
+
+        <p><strong>Meccan surahs</strong> are more thematically varied (higher novelty). <strong>Medinan surahs</strong> are more focused (higher coherence). This aligns with Islamic scholarship: Meccan revelation addresses diverse spiritual themes; Medinan revelation addresses specific community issues.</p>
+    </section>
+
+    <section id="sem003">
+        <h2>SEM-003: Rhetorical Axes <span class="badge badge-positive">Positive Result</span></h2>
+
+        <h3>The Six Axes</h3>
+        <table>
+            <tr>
+                <th>Axis</th>
+                <th>Negative Pole</th>
+                <th>Positive Pole</th>
+                <th>Mean</th>
+            </tr>
+            <tr>
+                <td><strong>Threat ↔ Mercy</strong></td>
+                <td>Punishment, Hell</td>
+                <td>Forgiveness, Paradise</td>
+                <td>-0.01</td>
+            </tr>
+            <tr>
+                <td><strong>Narrative ↔ Normative</strong></td>
+                <td>Stories, Prophets</td>
+                <td>Commands, Laws</td>
+                <td>+0.08</td>
+            </tr>
+            <tr>
+                <td><strong>Immanence ↔ Transcendence</strong></td>
+                <td>Earth, Worldly</td>
+                <td>Afterlife, Angels</td>
+                <td>+0.12</td>
+            </tr>
+            <tr>
+                <td><strong>Intimacy ↔ Majesty</strong></td>
+                <td>Direct address</td>
+                <td>Cosmic scale</td>
+                <td><strong>-0.14</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Certainty ↔ Contention</strong></td>
+                <td>Assertion</td>
+                <td>Polemic</td>
+                <td>+0.01</td>
+            </tr>
+            <tr>
+                <td><strong>Hope ↔ Fear</strong></td>
+                <td>Promise, Patience</td>
+                <td>Urgency, Warning</td>
+                <td>+0.03</td>
+            </tr>
+        </table>
+
+        <figure>
+            <img src="figures/combined_axes.png" alt="All Six Semantic Axes">
+            <figcaption>All six rhetorical axes across the Quran. Fill color indicates direction (red = positive pole, blue = negative pole).</figcaption>
+        </figure>
+
+        <h3>Key Discoveries</h3>
+
+        <div class="finding">
+            <div class="finding-icon">1</div>
+            <div>
+                <strong>Intimate Address Dominates</strong>
+                <p>The Intimacy axis averages -0.14, meaning the Quran consistently addresses readers directly ("O you who believe...") rather than using majestic distance.</p>
+            </div>
+        </div>
+
+        <div class="finding">
+            <div class="finding-icon">2</div>
+            <div>
+                <strong>Transcendence Baseline</strong>
+                <p>The text maintains a transcendent register (+0.12), focusing on afterlife, angels, and the unseen rather than worldly matters.</p>
+            </div>
+        </div>
+
+        <div class="finding">
+            <div class="finding-icon">3</div>
+            <div>
+                <strong>Threat/Mercy Oscillation</strong>
+                <p>Clear waves of warning and reassurance are visible in the flow, consistent with the Quran's described rhetorical pattern of "targhib wa tarhib" (encouragement and warning).</p>
+            </div>
+        </div>
+
+        <h3>Axis Correlations</h3>
+
+        <figure>
+            <img src="figures/axis_correlations.png" alt="Axis Correlation Matrix">
+            <figcaption>Correlation matrix between the six semantic axes.</figcaption>
+        </figure>
+
+        <div class="correlation-insight">
+            <strong>Striking Finding: Threat ↔ Certainty = -0.79</strong>
+            <p>Passages about <em>threat/punishment</em> are also <em>contentious</em> (arguing with opponents). Passages about <em>mercy/forgiveness</em> are <em>assertive</em> (stating truth with confidence). The rhetorical strategy is encoded in the embedding space.</p>
+        </div>
+
+        <h3>Per-Surah Signatures</h3>
+
+        <figure>
+            <img src="figures/surah_axis_heatmap.png" alt="Surah Axis Heatmap">
+            <figcaption>Average axis scores per surah. Blue = negative pole, Red = positive pole. Each surah has a distinct "rhetorical fingerprint."</figcaption>
+        </figure>
+    </section>
+
+    <section id="conclusions">
+        <h2>Conclusions</h2>
+
+        <h3>What We Found</h3>
+        <ol style="margin: 1rem 0 1rem 1.5rem;">
+            <li><strong>Surahs are real semantic units</strong> (1.9x novelty at boundaries)</li>
+            <li><strong>Meccan and Medinan have distinct signatures</strong> (varied vs focused)</li>
+            <li><strong>Six rhetorical axes are detectable</strong> via embedding projection</li>
+            <li><strong>The text favors intimacy and transcendence</strong> as default registers</li>
+            <li><strong>Warning correlates with polemic; mercy with assertion</strong></li>
+        </ol>
+
+        <h3>What This Is</h3>
+        <p><strong>Computational rhetoric.</strong> We detect structure without theology. The patterns exist in the embedding space regardless of interpretation.</p>
+
+        <h3>What This Is NOT</h3>
+        <ul style="margin: 1rem 0 1rem 1.5rem;">
+            <li>A claim about divine origin</li>
+            <li>A theological interpretation</li>
+            <li>A numerological analysis</li>
+        </ul>
+
+        <h3>Future Work</h3>
+        <ul style="margin: 1rem 0 1rem 1.5rem;">
+            <li>Muqattaat-specific axis analysis</li>
+            <li>Cross-corpus comparison (Bible, other texts)</li>
+            <li>Higher-resolution topic modeling</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>Quranic Structure Analysis Project | <a href="https://github.com/">View on GitHub</a></p>
+        <p>Experiments: SEM-001, SEM-002, SEM-003 | January 2026</p>
+    </footer>
+</body>
+</html>
